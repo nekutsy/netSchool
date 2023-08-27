@@ -128,6 +128,11 @@ def isOnline():
         return True
     return False
 
+def getFood(date: datetime.date):
+    url = "http://cheblyceum2.ru/upload/goryachee_pitanie/" + date.strftime('%d.%m.%Y').replace("-", ".") + ".PDF"
+    r = requests.get(url=url)
+    open(dataPath + "/food/pdf.pdf", "wb").write(r.content)
+
 def getDiary(start, end):
     p = {
         "At": at
@@ -301,7 +306,7 @@ def post(p = "", attachments = ""):
     if p != "" or attachments != "":
         sVk.method("wall.post", {"owner_id": -217414679, "from_group": 1, "message": p, "attachments": attachments})
 
-def photoUpload(photo):
+def photoUpload(photo: str):
     r = vk_api.upload.VkUpload.photo_wall(self=vk_api.upload.VkUpload(sVk), photos=[photo], group_id=groupId)[0]
     owner_id = r['owner_id']
     photo_id = r['id']
@@ -313,7 +318,7 @@ def docUpload(doc: str, name = "file"):
     doc_id = r['id']
     return owner_id, doc_id
 
-def photo2attachment(photo):
+def photo2attachment(photo: str):
     r = photoUpload(photo)
     return f'photo{r[0]}_{r[1]}'
 
@@ -348,7 +353,7 @@ if not os.path.exists(dataPath + "/shownNews.txt"):
 
 
 
-isRun = True
+isRun, autoRun = True, True
 def messages():
     longpoll = VkLongPoll(gVk)
     for event in longpoll.listen():
@@ -417,7 +422,7 @@ def messages():
                 
                 if words[0] == "stop":
                     global isRun
-                    isRun = False
+                    isRun, autoRun = False, False
                     write_msg(event.user_id, "stop was applied")
                     break
 
@@ -449,11 +454,38 @@ def posts():
             post(html2text.html2text(news2text([i])), attachments)
         time.sleep(delay)
 
-def main():
-    threading.Thread(target=messages).start()
-    posts()
+def foodPosts():
+    try:
+        os.mkdir(dataPath + "/food")
+    except:
+        pass
+    date = None
+    while isRun:
+        if date != datetime.date.today():
+            date = datetime.date.today()
+            try:
+                getFood(date)
+                pages = pdf2image.convert_from_path(dataPath + "/food/pdf.pdf")
+                #for num, page in enumerate(pages):
+                #    page.save("/food/img.jpg", 'JPEG')
+                pages[0].save(dataPath + "/food/img.jpg", 'JPEG')
+                post(str(date), photo2attachment(dataPath + "/food/img.jpg"))
+            except:
+                pass
+        time.sleep(delay)
+            
+            
 
-while isRun:
+def main():
+    msgThr, postThr, foodThr = threading.Thread(target=messages), threading.Thread(target=posts), threading.Thread(target=foodPosts)
+    msgThr.start()
+    postThr.start()
+    foodThr.start()
+    msgThr.join()
+    postThr.join()
+    foodThr.join()
+
+while autoRun:
     try:
         main()
     except Exception as e:
@@ -461,7 +493,7 @@ while isRun:
         try:
             post(e)
         except Exception as _e:
-            print(_e)
+            print("    ::::   ", _e)
 
 if isOnline():
     logout()
