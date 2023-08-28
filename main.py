@@ -355,124 +355,148 @@ if not os.path.exists(dataPath + "/shownNews.txt"):
 
 isRun, autoRun = True, True
 def messages():
-    longpoll = VkLongPoll(gVk)
-    for event in longpoll.listen():
-        if event.type == VkEventType.MESSAGE_NEW:
-            
-            if event.to_me:
-                request = event.text
-                words = request.split()
-                ln = len(words)
-                msg = ""
+    try:
+        longpoll = VkLongPoll(gVk)
+        for event in longpoll.listen():
+            if event.type == VkEventType.MESSAGE_NEW:
                 
-                if not isOnline():
-                    login()
-
-                if words[0] == "дз":
-                    if ln == 2:
-                        start = words[1]
-                        end = str(datetime.datetime.strptime(start, "%Y-%m-%d").date() + datetime.timedelta(days=3))
-
-                    elif ln == 3:
-                        start = words[1]
-                        end = words[2]
-                    else:
-                        start = str(datetime.datetime.now())[:10]
-                        end = str(datetime.datetime.strptime(start, "%Y-%m-%d").date() + datetime.timedelta(days=3))
+                if event.to_me:
+                    request = event.text
+                    words = request.split()
+                    ln = len(words)
+                    msg = ""
                     
-                    if len(start) == 10 and start[:4].isdigit() and start[5:7].isdigit() and start[8:].isdigit() and len(end) == 10 and end[:4].isdigit() and end[5:7].isdigit() and end[8:].isdigit():
-                        dt = (datetime.date(year=int(end[:4]), month=int(end[5:7]), day=int(end[8:])) - datetime.date(year=int(start[:4]), month=int(start[5:7]), day=int(start[8:]))).days
-                        if dt not in range(0, 10):
-                            msg = "big date gap (" + str(dt) + ")"
-                        else:
-                            msg = diary2text(getDiary(start, end))
-                    else:
-                        msg = "invalid date (" + start + "; " + end + ")"
-
-                if words[0] == "новости":
-                    if len(words) == 1:
-                        news = getNews()
-                        i = 0
-                        while i < len(news):
-                            date = datetime.datetime.strptime(news[i].get("postDate")[:10], "%Y-%m-%d").date()
-                            if date != datetime.date.today():
-                                del news[i]
-                            else:
-                                i+=1
-                        
-                        msg = news2text(news)
-                    if len(words) == 2:
-                        if words[1] == "все":
-                            msg = news2text(getNews())
-                        
-                        if words[1] == "новые":
-                            msg = news2text(discardOldNews(getNews(), True))
-                            
-                    msg = html2text.html2text(msg)
-                    
-                if words[0] == "logout":
                     if not isOnline():
-                        msg = "already"
-                    else:
-                        logout()
-                        if isOnline():
-                            msg = "unsuccessfuly"
-                        else:
-                            msg = "successfuly"
-                
-                if words[0] == "stop":
-                    global isRun
-                    isRun, autoRun = False, False
-                    write_msg(event.user_id, "stop was applied")
-                    break
+                        login()
 
-                write_msg(event.user_id, msg)
+                    if words[0] == "дз":
+                        if ln == 2:
+                            start = words[1]
+                            end = str(datetime.datetime.strptime(start, "%Y-%m-%d").date() + datetime.timedelta(days=3))
+
+                        elif ln == 3:
+                            start = words[1]
+                            end = words[2]
+                        else:
+                            start = str(datetime.datetime.now())[:10]
+                            end = str(datetime.datetime.strptime(start, "%Y-%m-%d").date() + datetime.timedelta(days=3))
+                        
+                        if len(start) == 10 and start[:4].isdigit() and start[5:7].isdigit() and start[8:].isdigit() and len(end) == 10 and end[:4].isdigit() and end[5:7].isdigit() and end[8:].isdigit():
+                            dt = (datetime.date(year=int(end[:4]), month=int(end[5:7]), day=int(end[8:])) - datetime.date(year=int(start[:4]), month=int(start[5:7]), day=int(start[8:]))).days
+                            if dt not in range(0, 10):
+                                msg = "big date gap (" + str(dt) + ")"
+                            else:
+                                msg = diary2text(getDiary(start, end))
+                        else:
+                            msg = "invalid date (" + start + "; " + end + ")"
+
+                    if words[0] == "новости":
+                        if len(words) == 1:
+                            news = getNews()
+                            i = 0
+                            while i < len(news):
+                                date = datetime.datetime.strptime(news[i].get("postDate")[:10], "%Y-%m-%d").date()
+                                if date != datetime.date.today():
+                                    del news[i]
+                                else:
+                                    i+=1
+                            
+                            msg = news2text(news)
+                        if len(words) == 2:
+                            if words[1] == "все":
+                                msg = news2text(getNews())
+                            
+                            if words[1] == "новые":
+                                msg = news2text(discardOldNews(getNews(), True))
+                                
+                        msg = html2text.html2text(msg)
+                        
+                    if words[0] == "logout":
+                        if not isOnline():
+                            msg = "already"
+                        else:
+                            logout()
+                            if isOnline():
+                                msg = "unsuccessfuly"
+                            else:
+                                msg = "successfuly"
+                    
+                    if words[0] == "stop":
+                        global isRun
+                        isRun, autoRun = False, False
+                        write_msg(event.user_id, "stop was applied")
+                        break
+
+                    write_msg(event.user_id, msg)
+    except Exception as e:
+        print(e)
+        try:
+            post(e)
+        except Exception as _e:
+            print("    ::::   ", _e)
+        isRun = False
 
 def posts():
-    while isRun:
-        if not isOnline():
-            login()
-        news = discardOldNews(getNews(), True)
-        for i in news:
-            id = str(i.get("id"))
-            attachmentsAmount = attachments2images(i.get("attachments"), id)
-            attachments = []
-            filesAmount = 0
-            if os.path.isdir(dataPath + f"/tmp/{id}/files"):
-                filesAmount = len(os.listdir(dataPath + f"/tmp/{id}/files"))
+    try:
+        while isRun:
+            if not isOnline():
+                login()
+            news = discardOldNews(getNews(), True)
+            for i in news:
+                id = str(i.get("id"))
+                attachmentsAmount = attachments2images(i.get("attachments"), id)
+                attachments = []
+                filesAmount = 0
+                if os.path.isdir(dataPath + f"/tmp/{id}/files"):
+                    filesAmount = len(os.listdir(dataPath + f"/tmp/{id}/files"))
 
-            for j in range(min(10 - filesAmount, attachmentsAmount)):
-                path = dataPath + f"/tmp/{id}/img/{str(j)}.jpg"
-                attachments.append(photo2attachment(path))
+                for j in range(min(10 - filesAmount, attachmentsAmount)):
+                    path = dataPath + f"/tmp/{id}/img/{str(j)}.jpg"
+                    attachments.append(photo2attachment(path))
 
-            if os.path.isdir(dataPath + f"/tmp/{id}/files"):
-                for j in os.listdir(dataPath + f"/tmp/{id}/files"):
-                    path = dataPath + f"/tmp/{id}/files/{j}"
-                    attachments.append(doc2attachment(path, j))
-            
-            attachments = sep(attachments, ",")
-            post(html2text.html2text(news2text([i])), attachments)
-        time.sleep(delay)
+                if os.path.isdir(dataPath + f"/tmp/{id}/files"):
+                    for j in os.listdir(dataPath + f"/tmp/{id}/files"):
+                        path = dataPath + f"/tmp/{id}/files/{j}"
+                        attachments.append(doc2attachment(path, j))
+                
+                attachments = sep(attachments, ",")
+                post(html2text.html2text(news2text([i])), attachments)
+            time.sleep(delay)
+    except Exception as e:
+        print(e)
+        try:
+            post(e)
+        except Exception as _e:
+            print("    ::::   ", _e)
+        isRun = False
 
 def foodPosts():
     try:
-        os.mkdir(dataPath + "/food")
-    except:
-        pass
-    date = None
-    while isRun:
-        if date != datetime.date.today():
-            date = datetime.date.today()
-            try:
-                getFood(date)
-                pages = pdf2image.convert_from_path(dataPath + "/food/pdf.pdf")
-                #for num, page in enumerate(pages):
-                #    page.save("/food/img.jpg", 'JPEG')
-                pages[0].save(dataPath + "/food/img.jpg", 'JPEG')
-                post(str(date), photo2attachment(dataPath + "/food/img.jpg"))
-            except:
-                pass
-        time.sleep(delay)
+        try:
+            os.mkdir(dataPath + "/food")
+        except:
+            pass
+        date = None
+        while isRun:
+            if date != datetime.date.today():
+                date = datetime.date.today()
+                try:
+                    getFood(date)
+                    pages = pdf2image.convert_from_path(dataPath + "/food/pdf.pdf")
+                    #for num, page in enumerate(pages):
+                    #    page.save("/food/img.jpg", 'JPEG')
+                    pages[0].save(dataPath + "/food/img.jpg", 'JPEG')
+                    post(str(date), photo2attachment(dataPath + "/food/img.jpg"))
+                except:
+                    pass
+            time.sleep(delay)
+    except Exception as e:
+        print(e)
+        try:
+            post(e)
+        except Exception as _e:
+            print("    ::::   ", _e)
+        isRun = False
             
             
 
