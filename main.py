@@ -355,6 +355,7 @@ if not os.path.exists(dataPath + "/shownNews.txt"):
 
 isRun, autoRun = True, True
 def messages():
+    global isRun
     try:
         longpoll = VkLongPoll(gVk)
         for event in longpoll.listen():
@@ -421,8 +422,8 @@ def messages():
                             else:
                                 msg = "successfuly"
                     
-                    if words[0] == "stop":
-                        global isRun
+                    if words[0] == "stop" or words[0] == "стоп":
+                        global isRun, autoRun
                         isRun, autoRun = False, False
                         write_msg(event.user_id, "stop was applied")
                         break
@@ -437,6 +438,7 @@ def messages():
         isRun = False
 
 def posts():
+    global isRun
     try:
         while isRun:
             if not isOnline():
@@ -471,6 +473,7 @@ def posts():
         isRun = False
 
 def foodPosts():
+    global isRun
     try:
         try:
             os.mkdir(dataPath + "/food")
