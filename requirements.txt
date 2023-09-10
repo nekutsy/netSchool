@@ -1,13 +1,6 @@
 requests
 js2py
-json
-datetime
 html2text
-random
 vk_api
-time
-threading
-os
 docx2pdf
 pdf2image
-configparser
