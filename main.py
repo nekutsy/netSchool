@@ -220,12 +220,17 @@ def discardOldNews(news, updateOld = False):
             if updateOld:
                 old.append(id)
     
-    if updateOld:
+    if updateOld and False:
         f = open(dataPath + "/shownNews.txt", "w")
         for i in old:
             f.write(str(i) + "\n")
     
     return news
+
+def addToOld(l: list):
+    f = open(dataPath + "/shownNews.txt", "w")
+    for i in l:
+            f.write(str(i) + "\n")
 
 def news2text(news, showTitle=True, showDescription=True, showDate=True, showAuthor=True, showAttachments=True, showId=False):
     out = ""
@@ -405,7 +410,7 @@ def messages():
                             msg = news2text(news)
                         if len(words) == 2:
                             if words[1] == "все":
-                                msg = news2text(getNews())
+                                msg = "починить"
                             
                             if words[1] == "новые":
                                 msg = news2text(discardOldNews(getNews(), True))
@@ -443,7 +448,7 @@ def posts():
         while isRun:
             if not isOnline():
                 login()
-            news = discardOldNews(getNews(), True)
+            news = discardOldNews(getNews())
             for i in news:
                 id = str(i.get("id"))
                 attachmentsAmount = attachments2images(i.get("attachments"), id)
@@ -463,6 +468,7 @@ def posts():
                 
                 attachments = sep(attachments, ",")
                 post(html2text.html2text(news2text([i])), attachments)
+                addToOld([id])
             time.sleep(delay)
     except Exception as e:
         print(e)
