@@ -465,9 +465,9 @@ def posts():
                     path = dataPath + f"/tmp/{id}/files/{j}"
                     attachments.append(doc2attachment(path, j))
             
+            addToOld([id])
             attachments = sep(attachments, ",")
             post(html2text.html2text(news2text([i])), attachments)
-            addToOld([id])
         time.sleep(delay)
     
 
