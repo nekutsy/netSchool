@@ -445,7 +445,7 @@ def messages():
 def posts():
     global isRun
     try:
-        while isRun:
+        while isRun or True:
             if not isOnline():
                 login()
             news = discardOldNews(getNews())
