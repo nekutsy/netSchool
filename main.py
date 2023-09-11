@@ -518,6 +518,7 @@ def main():
     postThr.join()
     foodThr.join()
 
+posts()
 while autoRun:
     try:
         main()
