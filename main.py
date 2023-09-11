@@ -444,39 +444,32 @@ def messages():
 
 def posts():
     global isRun
-    try:
-        while isRun or True:
-            if not isOnline():
-                login()
-            news = discardOldNews(getNews())
-            for i in news:
-                id = str(i.get("id"))
-                attachmentsAmount = attachments2images(i.get("attachments"), id)
-                attachments = []
-                filesAmount = 0
-                if os.path.isdir(dataPath + f"/tmp/{id}/files"):
-                    filesAmount = len(os.listdir(dataPath + f"/tmp/{id}/files"))
+    while isRun or True:
+        if not isOnline():
+            login()
+        news = discardOldNews(getNews())
+        for i in news:
+            id = str(i.get("id"))
+            attachmentsAmount = attachments2images(i.get("attachments"), id)
+            attachments = []
+            filesAmount = 0
+            if os.path.isdir(dataPath + f"/tmp/{id}/files"):
+                filesAmount = len(os.listdir(dataPath + f"/tmp/{id}/files"))
 
-                for j in range(min(10 - filesAmount, attachmentsAmount)):
-                    path = dataPath + f"/tmp/{id}/img/{str(j)}.jpg"
-                    attachments.append(photo2attachment(path))
+            for j in range(min(10 - filesAmount, attachmentsAmount)):
+                path = dataPath + f"/tmp/{id}/img/{str(j)}.jpg"
+                attachments.append(photo2attachment(path))
 
-                if os.path.isdir(dataPath + f"/tmp/{id}/files"):
-                    for j in os.listdir(dataPath + f"/tmp/{id}/files"):
-                        path = dataPath + f"/tmp/{id}/files/{j}"
-                        attachments.append(doc2attachment(path, j))
-                
-                attachments = sep(attachments, ",")
-                post(html2text.html2text(news2text([i])), attachments)
-                addToOld([id])
-            time.sleep(delay)
-    except Exception as e:
-        print(e)
-        try:
-            post(e)
-        except Exception as _e:
-            print("    ::::   ", _e)
-        isRun = False
+            if os.path.isdir(dataPath + f"/tmp/{id}/files"):
+                for j in os.listdir(dataPath + f"/tmp/{id}/files"):
+                    path = dataPath + f"/tmp/{id}/files/{j}"
+                    attachments.append(doc2attachment(path, j))
+            
+            attachments = sep(attachments, ",")
+            post(html2text.html2text(news2text([i])), attachments)
+            addToOld([id])
+        time.sleep(delay)
+    
 
 def foodPosts():
     global isRun
