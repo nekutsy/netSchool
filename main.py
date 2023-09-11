@@ -230,7 +230,7 @@ def discardOldNews(news, updateOld = False):
 def addToOld(l: list):
     f = open(dataPath + "/shownNews.txt", "w")
     for i in l:
-            f.write(str(i) + "\n")
+        f.write(str(i) + "\n")
 
 def news2text(news, showTitle=True, showDescription=True, showDate=True, showAuthor=True, showAttachments=True, showId=False):
     out = ""
@@ -519,7 +519,7 @@ def main():
     foodThr.join()
 
 posts()
-while autoRun:
+while autoRun and False:
     try:
         main()
     except Exception as e:
