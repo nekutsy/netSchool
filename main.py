@@ -228,7 +228,7 @@ def discardOldNews(news, updateOld = False):
     return news
 
 def addToOld(l: list):
-    f = open(dataPath + "/shownNews.txt", "w")
+    f = open(dataPath + "/shownNews.txt", "a")
     for i in l:
         f.write(str(i) + "\n")
 
@@ -283,6 +283,7 @@ def attachments2images(attachments, name):
         open(path + "/files/" + i.get("originalFileName"), "wb").write(r.content)
         if extension == "docx":
             nFileName = str(id) + ".pdf"
+            #os.system("doc2pdf -o " + path + "/" + fileName + " " + path + "/" + nFileName)
             docx2pdf.convert(path + "/" + fileName, path + "/" + nFileName)
 
             fileName = nFileName
@@ -293,7 +294,7 @@ def attachments2images(attachments, name):
                 os.mkdir(path + "/img")
             except:
                 pass
-            pages = pdf2image.convert_from_path(path + "/" + fileName)
+            pages = pdf2image.convert_from_path(path + "/" + fileName, last_page=10)
             for num, page in enumerate(pages):
                 page.save(path + f"/img/{count}.jpg", 'JPEG')
                 count += 1
@@ -309,7 +310,8 @@ def write_msg(user_id, message):
 
 def post(p = "", attachments = ""):
     if p != "" or attachments != "":
-        sVk.method("wall.post", {"owner_id": -217414679, "from_group": 1, "message": p, "attachments": attachments})
+        r = sVk.method("wall.post", {"owner_id": -groupId, "from_group": 1, "message": p, "attachments": attachments})
+        print(r)
 
 def photoUpload(photo: str):
     r = vk_api.upload.VkUpload.photo_wall(self=vk_api.upload.VkUpload(sVk), photos=[photo], group_id=groupId)[0]
@@ -458,6 +460,7 @@ def posts():
 
             for j in range(min(10 - filesAmount, attachmentsAmount)):
                 path = dataPath + f"/tmp/{id}/img/{str(j)}.jpg"
+                print(path)
                 attachments.append(photo2attachment(path))
 
             if os.path.isdir(dataPath + f"/tmp/{id}/files"):
@@ -511,6 +514,7 @@ def main():
     postThr.join()
     foodThr.join()
 
+#addToOld(["123123"])
 posts()
 while autoRun and False:
     try:
