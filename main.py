@@ -283,7 +283,7 @@ def attachments2images(attachments, name):
         open(path + "/files/" + i.get("originalFileName"), "wb").write(r.content)
         if extension == "docx":
             nFileName = str(id) + ".pdf"
-            os.system("doc2pdf -o " + path + "/" + fileName + " " + path + "/" + nFileName)
+            os.system("doc2pdf -o " + path + "/" + nFileName + " " + path + "/" + fileName)
             #docx2pdf.convert(path + "/" + fileName, path + "/" + nFileName)
 
             fileName = nFileName
