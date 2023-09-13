@@ -301,6 +301,9 @@ def attachments2images(attachments, name):
     return count
 
 #vk
+def setStatus(text: str):
+    sVk.method('status.set', {"text": text, "group_id": groupId})
+
 def write_msg(user_id, message):
         if message == "":
             message = "EMPTY MESSAGE"
@@ -332,7 +335,6 @@ def photo2attachment(photo: str):
 def doc2attachment(doc, name):
     r = docUpload(doc, name)
     return f'doc{r[0]}_{r[1]}'
-
 
 
 _path = abspath(getsourcefile(lambda:0)).replace("main.py", "").replace("\\", "/")
@@ -439,7 +441,7 @@ def messages():
     except Exception as e:
         print(e)
         try:
-            post(e)
+            setStatus(e)
         except Exception as _e:
             print("    ::::   ", _e)
         isRun = False
@@ -476,7 +478,7 @@ def posts():
     except Exception as e:
         print(e)
         try:
-            post(e)
+            setStatus(e)
         except Exception as _e:
             print("    ::::   ", _e)
         isRun = False
@@ -506,7 +508,7 @@ def foodPosts():
     except Exception as e:
         print(e)
         try:
-            post(e)
+            setStatus(e)
         except Exception as _e:
             print("    ::::   ", _e)
         isRun = False
@@ -528,7 +530,7 @@ while autoRun:
     except Exception as e:
         print(e)
         try:
-            post(e)
+            setStatus(e)
         except Exception as _e:
             print("    ::::   ", _e)
 
