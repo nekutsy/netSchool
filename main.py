@@ -434,7 +434,6 @@ def messages():
                                 msg = "successfuly"
                     
                     if words[0] == "stop" or words[0] == "стоп":
-                        global isRun
                         global autoRun
                         isRun, autoRun = False, False
                         write_msg(event.user_id, "stop was applied")
