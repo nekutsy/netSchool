@@ -368,6 +368,8 @@ def messages():
     try:
         longpoll = VkLongPoll(gVk)
         for event in longpoll.listen():
+            if not isRun:
+                break
             if event.type == VkEventType.MESSAGE_NEW:
                 
                 if event.to_me:
