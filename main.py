@@ -368,6 +368,7 @@ def messages():
     try:
         longpoll = VkLongPoll(gVk)
         for event in longpoll.listen():
+            print("msg")
             if not isRun:
                 break
             if event.type == VkEventType.MESSAGE_NEW:
@@ -452,6 +453,7 @@ def posts():
     global isRun
     try:
         while isRun:
+            print("posts")
             if not isOnline():
                 login()
             news = discardOldNews(getNews())
