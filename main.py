@@ -521,10 +521,10 @@ def main():
     msgThr, postThr, foodThr = threading.Thread(target=messages), threading.Thread(target=posts), threading.Thread(target=foodPosts)
     msgThr.start()
     postThr.start()
-    foodThr.start()
+    #foodThr.start()
     msgThr.join()
     postThr.join()
-    foodThr.join()
+    #foodThr.join()
 
 while autoRun:
     try:
