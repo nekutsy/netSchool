@@ -367,9 +367,7 @@ isRun, autoRun = True, True
 def messages():
     global isRun
     try:
-        print(1)
         longpoll = VkLongPoll(gVk)
-        print(2)
         for event in longpoll.listen():
             print(3)
             if not isRun:
@@ -443,7 +441,6 @@ def messages():
                         break
 
                     write_msg(event.user_id, msg)
-        print(5)
     except Exception as e:
         print(e)
         try:
@@ -522,13 +519,18 @@ def foodPosts():
             
 
 def main():
+    global gVk, sVk
+    gVk = vk_api.VkApi(token=groupToken)
+    sVk = vk_api.VkApi(token=accessToken)
     msgThr, postThr, foodThr = threading.Thread(target=messages), threading.Thread(target=posts), threading.Thread(target=foodPosts)
     msgThr.start()
     postThr.start()
+    print("threads started")
     #foodThr.start()
     msgThr.join()
     postThr.join()
     #foodThr.join()
+    print("threads stoped")
 
 while autoRun:
     try:
