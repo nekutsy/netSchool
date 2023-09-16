@@ -443,7 +443,7 @@ def messages():
                         break
 
                     write_msg(event.user_id, msg)
-            print(5)
+        print(5)
     except Exception as e:
         print(e)
         try:
