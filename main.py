@@ -384,7 +384,7 @@ def messages():
 
                     if words[0] == "дз":
                         verbose = False
-                        if words[-1] == "всё" or words[1] == "все":
+                        if len(words) > 1 and (words[-1] == "всё" or words[1] == "все"):
                             verbose = True
                             del words[-1]
                             
