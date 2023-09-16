@@ -369,7 +369,6 @@ def messages():
     try:
         longpoll = VkLongPoll(gVk)
         for event in longpoll.listen():
-            print(3)
             if not isRun:
                 break
             if event.type == VkEventType.MESSAGE_NEW:
@@ -534,6 +533,7 @@ def main():
 
 while autoRun:
     try:
+        isRun = True
         main()
     except Exception as e:
         print(e)
