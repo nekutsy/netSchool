@@ -367,12 +367,14 @@ isRun, autoRun = True, True
 def messages():
     global isRun
     try:
+        print(1)
         longpoll = VkLongPoll(gVk)
+        print(2)
         for event in longpoll.listen():
+            print(3)
             if not isRun:
                 break
             if event.type == VkEventType.MESSAGE_NEW:
-                
                 if event.to_me:
                     request = event.text
                     words = request.split()
@@ -441,6 +443,7 @@ def messages():
                         break
 
                     write_msg(event.user_id, msg)
+            print(5)
     except Exception as e:
         print(e)
         try:
