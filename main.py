@@ -302,6 +302,7 @@ def attachments2images(attachments, name):
 
 #vk
 def setStatus(text: str):
+    return
     sVk.method('status.set', {"text": text, "group_id": groupId})
 
 def write_msg(user_id, message):
@@ -368,7 +369,6 @@ def messages():
     try:
         longpoll = VkLongPoll(gVk)
         for event in longpoll.listen():
-            print("msg")
             if not isRun:
                 break
             if event.type == VkEventType.MESSAGE_NEW:
@@ -453,7 +453,6 @@ def posts():
     global isRun
     try:
         while isRun:
-            print("posts")
             if not isOnline():
                 login()
             news = discardOldNews(getNews())
