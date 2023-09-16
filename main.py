@@ -143,7 +143,7 @@ def getDiary(start, end):
         "weekEnd": end,
         "weekStart": start,
         "withLaAssigns": "false",
-        "yearId": "148662"
+        "yearId": "161751"
     }
     r = session.get("https://net-school.cap.ru/webapi/student/diary", params=params, data=p)
     rj = json.loads(r.text)
