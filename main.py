@@ -88,28 +88,30 @@ def isWebsiteExist(url):
 #netschool
 def login():
     pre = str(isOnline())
-    global session, lt, ver, salt, at
-    r = session.post("https://net-school.cap.ru/webapi/auth/getdata")
-    rc = json.loads(r.text)
-    lt = rc.get("lt")
-    ver = rc.get("ver")
-    salt = rc.get("salt")
-    p2 = {"LoginType":"1",
-        "cid": "2",
-        "sid": "21",
-        "pid": "-449",
-        "cn": "449",
-        "sft": "2",
-        "scid": "494",
-        "UN": userName,
-        "PW": jsFunc(salt+jsFunc(password))[:15],
-        "lt": lt,
-        "pw2": jsFunc(salt+jsFunc(password)),
-        "ver": ver,
-    }
-    r = session.post("https://net-school.cap.ru/webapi/login", data=p2)
-    rc = json.loads(r.text)
-    at = rc.get("at")
+    if not isOnline():
+        global session, lt, ver, salt, at
+        r = session.post("https://net-school.cap.ru/webapi/auth/getdata")
+        rc = json.loads(r.text)
+        lt = rc.get("lt")
+        ver = rc.get("ver")
+        salt = rc.get("salt")
+        p2 = {
+            "LoginType": "1",
+            "cid": "2",
+            "sid": "21",
+            "pid": "-449",
+            "cn": "449",
+            "sft": "2",
+            "scid": "494",
+            "UN": userName,
+            "PW": jsFunc(salt+jsFunc(password))[:15],
+            "lt": lt,
+            "pw2": jsFunc(salt+jsFunc(password)),
+            "ver": ver,
+        }
+        r = session.post("https://net-school.cap.ru/webapi/login", data=p2)
+        rc = json.loads(r.text)
+        at = rc.get("at")
     print("login called (isOnline: " + pre + "->" + str(isOnline()) + ")")
 
 def logout():
@@ -157,8 +159,8 @@ def diary2text(diary, showMark=True, showMarkReason=False, showText=True, verbos
         date = i.get("date")[:10]
         intDay = datetime.date(year=int(date[:4]), month=int(date[5:7]), day=int(date[8:])).weekday()
         days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-
         day = [date + " (" + days[intDay] + ")"]
+        
         for j in i.get("lessons"):
             assignments = j.get("assignments")
             name = j.get("subjectName")
@@ -378,14 +380,17 @@ def messages():
                     ln = len(words)
                     msg = ""
                     
-                    if not isOnline():
-                        login()
+                    login()
 
                     if words[0] == "дз":
+                        verbose = False
+                        if words[-1] == "всё" or words[1] == "все":
+                            verbose = True
+                            del words[-1]
+                            
                         if ln == 2:
                             start = words[1]
                             end = str(datetime.datetime.strptime(start, "%Y-%m-%d").date() + datetime.timedelta(days=3))
-
                         elif ln == 3:
                             start = words[1]
                             end = words[2]
@@ -398,7 +403,7 @@ def messages():
                             if dt not in range(0, 10):
                                 msg = "big date gap (" + str(dt) + ")"
                             else:
-                                msg = diary2text(getDiary(start, end))
+                                msg = diary2text(getDiary(start, end), verbose=verbose)
                         else:
                             msg = "invalid date (" + start + "; " + end + ")"
 
@@ -419,7 +424,7 @@ def messages():
                                 msg = "починить"
                             
                             if words[1] == "новые":
-                                msg = news2text(discardOldNews(getNews(), True))
+                                msg = "придумать"
                                 
                         msg = html2text.html2text(msg)
                         
@@ -439,7 +444,7 @@ def messages():
                         write_msg(event.user_id, "stop was applied")
                         break
 
-                    write_msg(event.user_id, msg)
+                    write_msg(event.user_id, msg[:min(4096, len(msg))])
     except Exception as e:
         print(e)
         try:
@@ -452,8 +457,7 @@ def posts():
     global isRun
     try:
         while isRun:
-            if not isOnline():
-                login()
+            login()
             news = discardOldNews(getNews())
             for i in news:
                 id = str(i.get("id"))
@@ -529,7 +533,7 @@ def main():
     msgThr.join()
     postThr.join()
     #foodThr.join()
-    print("threads stoped")
+    print("threads stopped")
 
 while autoRun:
     try:
