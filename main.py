@@ -88,6 +88,8 @@ def isWebsiteExist(url):
 #netschool
 def login():
     pre = str(isOnline())
+    if pre == True:
+        return
     if not isOnline():
         global session, lt, ver, salt, at
         r = session.post("https://net-school.cap.ru/webapi/auth/getdata")
