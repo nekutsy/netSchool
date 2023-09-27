@@ -87,7 +87,7 @@ def isWebsiteExist(url):
 
 #netschool
 def login():
-    pre = str(isOnline())
+    pre = isOnline()
     if pre == True:
         return
     if not isOnline():
@@ -114,7 +114,7 @@ def login():
         r = session.post("https://net-school.cap.ru/webapi/login", data=p2)
         rc = json.loads(r.text)
         at = rc.get("at")
-    print("login called (isOnline: " + pre + "->" + str(isOnline()) + ")")
+    print("login called (isOnline: " + str(pre) + "->" + str(isOnline()) + ")")
 
 def logout():
     pre = str(isOnline())
