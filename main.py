@@ -322,13 +322,14 @@ def post(p = "", attachments = ""):
         print(r)
 
 def photoUpload(photo: str):
-    r = vk_api.upload.VkUpload.photo_wall(self=vk_api.upload.VkUpload(sVk), photos=[photo], group_id=groupId)[0]
+    print(photo)
+    r = upload.photo_wall(photos=[photo], group_id=groupId)[0]
     owner_id = r['owner_id']
     photo_id = r['id']
     return owner_id, photo_id
 
 def docUpload(doc: str, name = "file"):
-    r = vk_api.upload.VkUpload.document_wall(self=vk_api.upload.VkUpload(sVk), doc=[doc], title=name)['doc']
+    r = upload.document_wall(doc=[doc], title=name)['doc']
     owner_id = r['owner_id']
     doc_id = r['id']
     return owner_id, doc_id
@@ -361,6 +362,7 @@ vers = config["netSchool"]["vers"]
 
 gVk = vk_api.VkApi(token=groupToken)
 sVk = vk_api.VkApi(token=accessToken)
+upload = vk_api.upload.VkUpload(sVk)
 
 if not os.path.exists(dataPath + "/shownNews.txt"):
     createData()
@@ -371,89 +373,91 @@ isRun, autoRun = True, True
 def messages():
     global isRun
     try:
-        longpoll = VkLongPoll(gVk)
-        for event in longpoll.listen():
+        longpoll = VkLongPoll(gVk, wait=25)
+        while len(events := longpoll.check()) > 0:
             if not isRun:
                 break
-            if event.type == VkEventType.MESSAGE_NEW:
-                if event.to_me:
-                    request = event.text
-                    words = request.split()
-                    ln = len(words)
-                    msg = ""
-                    
-                    login()
+            for event in events:
+                if event.type == VkEventType.MESSAGE_NEW:
+                    if event.to_me:
+                        request = event.text
+                        words = request.split()
+                        ln = len(words)
+                        msg = ""
+                        login()
 
-                    if words[0] == "дз":
-                        verbose = False
-                        if len(words) > 1 and (words[-1] == "всё" or words[1] == "все"):
-                            verbose = True
-                            del words[-1]
-                            
-                        if ln == 2:
-                            start = words[1]
-                            end = str(datetime.datetime.strptime(start, "%Y-%m-%d").date() + datetime.timedelta(days=3))
-                        elif ln == 3:
-                            start = words[1]
-                            end = words[2]
-                        else:
-                            start = str(datetime.datetime.now())[:10]
-                            end = str(datetime.datetime.strptime(start, "%Y-%m-%d").date() + datetime.timedelta(days=3))
-                        
-                        if len(start) == 10 and start[:4].isdigit() and start[5:7].isdigit() and start[8:].isdigit() and len(end) == 10 and end[:4].isdigit() and end[5:7].isdigit() and end[8:].isdigit():
-                            dt = (datetime.date(year=int(end[:4]), month=int(end[5:7]), day=int(end[8:])) - datetime.date(year=int(start[:4]), month=int(start[5:7]), day=int(start[8:]))).days
-                            if dt not in range(0, 10):
-                                msg = "big date gap (" + str(dt) + ")"
-                            else:
-                                msg = diary2text(getDiary(start, end), verbose=verbose)
-                        else:
-                            msg = "invalid date (" + start + "; " + end + ")"
-
-                    if words[0] == "новости":
-                        if len(words) == 1:
-                            news = getNews()
-                            i = 0
-                            while i < len(news):
-                                date = datetime.datetime.strptime(news[i].get("postDate")[:10], "%Y-%m-%d").date()
-                                if date != datetime.date.today():
-                                    del news[i]
-                                else:
-                                    i+=1
-                            
-                            msg = news2text(news)
-                        if len(words) == 2:
-                            if words[1] == "все":
-                                msg = "починить"
-                            
-                            if words[1] == "новые":
-                                msg = "придумать"
+                        if words[0] == "дз":
+                            verbose = False
+                            if len(words) > 1 and (words[-1] == "всё" or words[1] == "все"):
+                                verbose = True
+                                del words[-1]
                                 
-                        msg = html2text.html2text(msg)
-                        
-                    if words[0] == "logout":
-                        if not isOnline():
-                            msg = "already"
-                        else:
-                            logout()
-                            if isOnline():
-                                msg = "unsuccessfuly"
+                            if ln == 2:
+                                start = words[1]
+                                end = str(datetime.datetime.strptime(start, "%Y-%m-%d").date() + datetime.timedelta(days=3))
+                            elif ln == 3:
+                                start = words[1]
+                                end = words[2]
                             else:
-                                msg = "successfuly"
-                    
-                    if words[0] == "stop" or words[0] == "стоп":
-                        global autoRun
-                        isRun, autoRun = False, False
-                        write_msg(event.user_id, "stop was applied")
-                        break
+                                start = str(datetime.datetime.now())[:10]
+                                end = str(datetime.datetime.strptime(start, "%Y-%m-%d").date() + datetime.timedelta(days=3))
+                            
+                            if len(start) == 10 and start[:4].isdigit() and start[5:7].isdigit() and start[8:].isdigit() and len(end) == 10 and end[:4].isdigit() and end[5:7].isdigit() and end[8:].isdigit():
+                                dt = (datetime.date(year=int(end[:4]), month=int(end[5:7]), day=int(end[8:])) - datetime.date(year=int(start[:4]), month=int(start[5:7]), day=int(start[8:]))).days
+                                if dt not in range(0, 10):
+                                    msg = "big date gap (" + str(dt) + ")"
+                                else:
+                                    msg = diary2text(getDiary(start, end), verbose=verbose)
+                            else:
+                                msg = "invalid date (" + start + "; " + end + ")"
 
-                    write_msg(event.user_id, msg[:min(4096, len(msg))])
+                        if words[0] == "новости":
+                            if len(words) == 1:
+                                news = getNews()
+                                i = 0
+                                while i < len(news):
+                                    date = datetime.datetime.strptime(news[i].get("postDate")[:10], "%Y-%m-%d").date()
+                                    if date != datetime.date.today():
+                                        del news[i]
+                                    else:
+                                        i+=1
+                                
+                                msg = news2text(news)
+                            if len(words) == 2:
+                                if words[1] == "все":
+                                    msg = "починить"
+                                
+                                if words[1] == "новые":
+                                    msg = "придумать"
+                                    
+                            msg = html2text.html2text(msg)
+                            
+                        if words[0] == "logout":
+                            if not isOnline():
+                                msg = "already"
+                            else:
+                                logout()
+                                if isOnline():
+                                    msg = "unsuccessfuly"
+                                else:
+                                    msg = "successfuly"
+                        
+                        if words[0] == "stop" or words[0] == "стоп":
+                            global autoRun
+                            isRun, autoRun = False, False
+                            write_msg(event.user_id, "stop was applied")
+                            break
+
+                        write_msg(event.user_id, msg[:min(4096, len(msg))])
     except Exception as e:
         print(e)
         try:
             setStatus(e)
+            print("the new status is set")
         except Exception as _e:
             print("    ::::   ", _e)
         isRun = False
+    print("msg thread is stopped")
 
 def posts():
     global isRun
@@ -487,9 +491,11 @@ def posts():
         print(e)
         try:
             setStatus(e)
+            print("the new status is set")
         except Exception as _e:
             print("    ::::   ", _e)
         isRun = False
+    print("posts thread is stopped")
     
 
 def foodPosts():
@@ -517,17 +523,17 @@ def foodPosts():
         print(e)
         try:
             setStatus(e)
+            print("the new status is set")
         except Exception as _e:
             print("    ::::   ", _e)
         isRun = False
-            
             
 
 def main():
     global gVk, sVk
     gVk = vk_api.VkApi(token=groupToken)
     sVk = vk_api.VkApi(token=accessToken)
-    msgThr, postThr, foodThr = threading.Thread(target=messages), threading.Thread(target=posts), threading.Thread(target=foodPosts)
+    msgThr, postThr = threading.Thread(target=messages), threading.Thread(target=posts)
     msgThr.start()
     postThr.start()
     print("threads started")
