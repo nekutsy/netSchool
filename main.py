@@ -322,7 +322,6 @@ def post(p = "", attachments = ""):
         print(r)
 
 def photoUpload(photo: str):
-    print(photo)
     r = upload.photo_wall(photos=[photo], group_id=groupId)[0]
     owner_id = r['owner_id']
     photo_id = r['id']
