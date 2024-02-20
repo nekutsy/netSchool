@@ -450,7 +450,7 @@ def messages():
         print(e)
         try:
             setStatus(e)
-            print("the new status is set")
+            #print("the new status is set")
         except Exception as _e:
             print("    ::::   ", _e)
         isRun = False
@@ -464,6 +464,7 @@ def posts():
             news = discardOldNews(getNews())
             for i in news:
                 id = str(i.get("id"))
+                print("post", id, "processing started")
                 attachmentsAmount = attachments2images(i.get("attachments"), id)
                 attachments = []
                 filesAmount = 0
@@ -488,7 +489,7 @@ def posts():
         print(e)
         try:
             setStatus(e)
-            print("the new status is set")
+            #print("the new status is set")
         except Exception as _e:
             print("    ::::   ", _e)
         isRun = False
@@ -520,7 +521,7 @@ def foodPosts():
         print(e)
         try:
             setStatus(e)
-            print("the new status is set")
+            #print("the new status is set")
         except Exception as _e:
             print("    ::::   ", _e)
         isRun = False
