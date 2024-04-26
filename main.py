@@ -49,7 +49,7 @@ def createConfig(path):
     config.set("netSchool", "password", "")
     config.set("netSchool", "userName", "")
     config.set("netSchool", "userId", "")
-    config.set("netSchool", "vers", "")
+    config.set("netSchool", "vers", "1687031233027")
     
     config.add_section("vk")
     config.set("vk", "groupToken", "")
@@ -86,11 +86,9 @@ def isWebsiteExist(url):
         return False
 
 #netschool
-def login():
+def login(forced = False):
     pre = isOnline()
-    if pre == True:
-        return
-    if not isOnline():
+    if not isOnline() or forced:
         global session, lt, ver, salt, at
         r = session.post("https://net-school.cap.ru/webapi/auth/getdata")
         rc = json.loads(r.text)
